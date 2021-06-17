@@ -12,12 +12,24 @@
 avian <- read.csv('C:\\Users\\Siarhei\\Downloads\\avianHabitat_sewardPeninsula_McNew_2012\\avianHabitat_sewardPeninsula_McNew_2012.csv')
 avian2 <- read.csv(sep = ";", skip = 5, header = T, comment.char = "%", quote = "", na.strings = "Don't remember", file ='C:\\Users\\Siarhei\\Downloads\\avianHabitat2.csv')
 
+
 #cheking data
 str(avian)
 head(avian)
 summary(avian)
 any(!complete.cases(avian))
-any(avian$PDB < 0); any(avian$PDB > 100) #проверка <0 >100 процентов
+
+check_precent_range <- function(x) {
+  any(x < 0 | x > 100)
+}
+
+# check data with the percentage
+library(stringr)
+coverage_var <- names(avian)[str_detect(names(avian), '^P')]
+sapply(coverage_var, function(name) check_precent_range(avian[[name]]))
+
+# correct data
+avian$Observer <- as.factor(avian$Observer) 
 
 # add Carol's data
 avian2$Observer = 'Carol'
@@ -25,8 +37,9 @@ avian2$total_coverage = 0
 avian2
 avian <- rbind(avian, avian2)
 
+
 # find the answer
-coverage_var <- names(avian)[-(1:4)][c(T, F)]
+#coverage_var <- names(avian)[-(1:4)][c(T, F)] - old way of finding data with percentage
 avian$total_coverage <- rowSums(avian[, coverage_var])
 summary(avian)
 
